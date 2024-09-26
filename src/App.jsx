@@ -1,72 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState } from 'react';
+import ChatHeader from './components/ChatHeader';
+import ChatBody from './components/ChatBody';
+import ChatInput from './components/ChatInput';
+import Sidebar from './components/Sidebar';
+
 
 function App() {
-  const [tasks, setTasks] = useState([]);
-  const [taskInput, setTaskInput] = useState('');
+  const [messages, setMessages] = useState([
+    { text: "Hello, how are you?", sender: "me", timestamp: "12:45 PM" },
+    { text: "I'm fine, thank you!", sender: "them", timestamp: "12:46 PM" }
+  ]);
 
-  useEffect(() => {
-    // Mengambil data tugas dari localStorage saat komponen pertama kali dimuat
-    const storedTasks = JSON.parse(localStorage.getItem('tasks'));
-    if (storedTasks) {
-      setTasks(storedTasks);
-    }
-  }, []);
+  const [currentChat, setCurrentChat] = useState("John Doe");
 
-  const handleAddTask = () => {
-    if (taskInput.trim() === '') return; // Jangan menambahkan tugas kosong
-
-    const newTasks = [...tasks, taskInput];
-    setTasks(newTasks);
-    localStorage.setItem('tasks', JSON.stringify(newTasks));
-    setTaskInput('');
-
-    // Menampilkan notifikasi saat tugas ditambahkan
-    showNotification('Task added!', taskInput);
-  };
-
-  const showNotification = (title, body) => {
-    if (Notification.permission === 'granted') {
-      new Notification(title, { body });
-    } else {
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          new Notification(title, { body });
-        }
-      });
-    }
-  };
-
-  const handleInputChange = (event) => {
-    setTaskInput(event.target.value);
-  };
-
-  const handleDeleteTask = (index) => {
-    const newTasks = tasks.filter((_, i) => i !== index);
-    setTasks(newTasks);
-    localStorage.setItem('tasks', JSON.stringify(newTasks));
+  // Function to handle sending a new message
+  const handleSendMessage = (newMessage) => {
+    setMessages([...messages, { text: newMessage, sender: "me", timestamp: new Date().toLocaleTimeString() }]);
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Welcome to My Vite PWA!</h1>
-        <input
-          type="text"
-          value={taskInput}
-          onChange={handleInputChange}
-          placeholder="Add a new task"
-        />
-        <button onClick={handleAddTask}>Add Task</button>
-        <ul>
-          {tasks.map((task, index) => (
-            <li key={index}>
-              {task}
-              <button onClick={() => handleDeleteTask(index)}>Delete</button>
-            </li>
-          ))}
-        </ul>
-      </header>
+    <div className="flex h-screen">
+      {/* Sidebar */}
+      <div className="hidden lg:flex w-1/3 border-r">
+        <Sidebar setCurrentChat={setCurrentChat} />
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Chat Header */}
+        <ChatHeader currentChat={currentChat} />
+
+        {/* Chat Body */}
+        <ChatBody messages={messages} />
+
+        {/* Chat Input */}
+        <ChatInput onSendMessage={handleSendMessage} />
+      </div>
     </div>
   );
 }
